@@ -2,75 +2,129 @@ using UnityEngine;
 
 public class TileScript : MonoBehaviour
 {
-    void OnCollisionStay2D(Collision2D collision)
+    public bool isRedTile = false;
+    public bool isBlackTile = false;
+    public bool isPausedTile = false; 
+
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check if the colliding object is the Player
         if (collision.gameObject.CompareTag("Player"))
         {
-            Vector2 playerPosition = collision.transform.position;
-            Vector2 tilePosition = transform.position;
-
-            // Calculate relative position
-            Vector2 difference = tilePosition - playerPosition;
-
-            // Check correct key press
-            if (Mathf.Abs(difference.x) > Mathf.Abs(difference.y)) // Player is left or right
+            if (isPausedTile)
             {
-                if (difference.x > 0 && Input.GetKey(KeyCode.RightArrow)) // Player is left of the tile
+                GameObject player2 = GameObject.FindGameObjectWithTag("Player2");
+                if (player2 != null)
                 {
-                    Destroy(gameObject);
+                    PlayerScript2 ps2 = player2.GetComponent<PlayerScript2>();
+                    if (ps2 != null && !ps2.isPaused)
+                    {
+                        ps2.StartCoroutine(ps2.PauseForSeconds(5f));
+                    }
                 }
-                else if (difference.x < 0 && Input.GetKey(KeyCode.LeftArrow)) // Player is right of the tile
-                {
-                    Destroy(gameObject);
-                }
+                Destroy(gameObject);
+                return;
             }
-            else // Player is above or below
+
+            if (isBlackTile)
             {
-                if (difference.y > 0 && Input.GetKey(KeyCode.UpArrow)) // Player is below the tile
-                {
-                    Destroy(gameObject);
-                }
-                else if (difference.y < 0 && Input.GetKey(KeyCode.DownArrow)) // Player is above the tile
-                {
-                    Destroy(gameObject);
-                }
+                GameManager.Instance.EndGame("Player 2");
+                Destroy(gameObject);
+                return;
             }
         }
-
-        // Check if the colliding object is the Player
-        if (collision.gameObject.CompareTag("Player2"))
+        else if (collision.gameObject.CompareTag("Player2"))
         {
-            Vector2 playerPosition = collision.transform.position;
-            Vector2 tilePosition = transform.position;
-
-            // Calculate relative position
-            Vector2 difference = tilePosition - playerPosition;
-
-            // Check correct key press
-            if (Mathf.Abs(difference.x) > Mathf.Abs(difference.y)) // Player is left or right
+            if (isPausedTile)
             {
-                if (difference.x > 0 && Input.GetKey(KeyCode.D)) // Player is left of the tile
+                GameObject player1 = GameObject.FindGameObjectWithTag("Player");
+                if (player1 != null)
                 {
-                    Destroy(gameObject);
+                    PlayerScript ps1 = player1.GetComponent<PlayerScript>();
+                    if (ps1 != null && !ps1.isPaused)
+                    {
+                        ps1.StartCoroutine(ps1.PauseForSeconds(5f));
+                    }
                 }
-                else if (difference.x < 0 && Input.GetKey(KeyCode.A)) // Player is right of the tile
-                {
-                    Destroy(gameObject);
-                }
+                Destroy(gameObject);
+                return;
             }
-            else // Player is above or below
+
+            if (isBlackTile)
             {
-                if (difference.y > 0 && Input.GetKey(KeyCode.W)) // Player is below the tile
-                {
-                    Destroy(gameObject);
-                }
-                else if (difference.y < 0 && Input.GetKey(KeyCode.S)) // Player is above the tile
-                {
-                    Destroy(gameObject);
-                }
+                GameManager.Instance.EndGame("Player 1");
+                Destroy(gameObject);
+                return;
             }
         }
     }
 
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            if (isRedTile && CheckDirectionalKeyForPlayer1(collision.transform))
+            {
+                Destroy(gameObject);
+                ScoreManager.Instance.AddScorePlayer1(1);
+                return;
+            }
+            if (!isPausedTile && !isBlackTile && !isRedTile && CheckDirectionalKeyForPlayer1(collision.transform))
+            {
+                Destroy(gameObject);
+            }
+        }
+        else if (collision.gameObject.CompareTag("Player2"))
+        {
+            if (isRedTile && CheckDirectionalKeyForPlayer2(collision.transform))
+            {
+                Destroy(gameObject);
+                ScoreManager.Instance.AddScorePlayer2(1);
+                return;
+            }
+            if (!isPausedTile && !isBlackTile && !isRedTile && CheckDirectionalKeyForPlayer2(collision.transform))
+            {
+                Destroy(gameObject);
+            }
+        }
+    }
+
+    private bool CheckDirectionalKeyForPlayer1(Transform playerTransform)
+    {
+        Vector2 diff = (Vector2)transform.position - (Vector2)playerTransform.position;
+        if (Mathf.Abs(diff.x) > Mathf.Abs(diff.y))
+        {
+ 
+            if (diff.x > 0)
+                return Input.GetKey(KeyCode.D);
+            else
+                return Input.GetKey(KeyCode.A);
+        }
+        else
+        {
+            if (diff.y > 0)
+                return Input.GetKey(KeyCode.W);
+            else
+                return Input.GetKey(KeyCode.S);
+        }
+    }
+
+    
+    private bool CheckDirectionalKeyForPlayer2(Transform playerTransform)
+    {
+        Vector2 diff = (Vector2)transform.position - (Vector2)playerTransform.position;
+        if (Mathf.Abs(diff.x) > Mathf.Abs(diff.y))
+        {
+            if (diff.x > 0)
+                return Input.GetKey(KeyCode.RightArrow);
+            else
+                return Input.GetKey(KeyCode.LeftArrow);
+        }
+        else
+        {
+            if (diff.y > 0)
+                return Input.GetKey(KeyCode.UpArrow);
+            else
+                return Input.GetKey(KeyCode.DownArrow);
+        }
+    }
 }

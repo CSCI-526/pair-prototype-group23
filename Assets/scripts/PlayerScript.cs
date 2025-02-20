@@ -1,70 +1,73 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerScript : MonoBehaviour
 {
-    public float moveSpeed = 5f; // Speed of movement
-    public float jumpForce = 7f; // Adjusted for a 2-unit jump
+    public float moveSpeed = 5f;
+    public float jumpForce = 7f;
+    public bool isPaused = false;
+    public float pauseTimer = 0f; // Remaining pause time
+
     private Rigidbody2D rb;
     private Vector2 moveDirection;
-    private bool isGrounded; // Checks if player is on the ground
+    private bool isGrounded;
 
     void Start()
     {
-        rb = GetComponent<Rigidbody2D>(); // Get Rigidbody2D component
+        rb = GetComponent<Rigidbody2D>();
+    }
+
+    public IEnumerator PauseForSeconds(float seconds)
+    {
+        isPaused = true;
+        pauseTimer = seconds;
+        while (pauseTimer > 0)
+        {
+            pauseTimer -= Time.deltaTime;
+            yield return null;
+        }
+        isPaused = false;
+        pauseTimer = 0f;
     }
 
     void Update()
     {
-        // Reset movement
+        if (isPaused)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
+
         moveDirection = Vector2.zero;
-
-        // Arrow key inputs for 2D movement
-        //if (Input.GetKey(KeyCode.UpArrow))
-        //{
-        //    moveDirection += Vector2.up;
-        //}
-        if (Input.GetKey(KeyCode.DownArrow))
-        {
+        if (Input.GetKey(KeyCode.S))
             moveDirection += Vector2.down;
-        }
-        if (Input.GetKey(KeyCode.LeftArrow))
-        {
+        if (Input.GetKey(KeyCode.A))
             moveDirection += Vector2.left;
-        }
-        if (Input.GetKey(KeyCode.RightArrow))
-        {
+        if (Input.GetKey(KeyCode.D))
             moveDirection += Vector2.right;
-        }
-
-        // Normalize direction to avoid diagonal speed boost
         if (moveDirection.magnitude > 1)
-        {
             moveDirection.Normalize();
-        }
 
-        // Jumping (Only if the player is grounded)
-        if (Input.GetKeyDown(KeyCode.UpArrow) && isGrounded)
+        if (Input.GetKeyDown(KeyCode.W) && isGrounded)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce); // Jump upwards
-            isGrounded = false; // Prevent double jumping
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            isGrounded = false;
         }
-
     }
 
     void FixedUpdate()
     {
-        // Move the player using Rigidbody2D physics
-        //rb.linearVelocity = moveDirection * moveSpeed;
-        // Apply horizontal movement
+        if (isPaused)
+        {
+            rb.linearVelocity = Vector2.zero;
+            return;
+        }
         rb.linearVelocity = new Vector2(moveDirection.x * moveSpeed, rb.linearVelocity.y);
     }
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // Check if player is touching the ground
         if (collision.contacts[0].normal.y > 0.5f)
-        {
             isGrounded = true;
-        }
     }
 }
