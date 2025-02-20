@@ -12,7 +12,7 @@ public class CameraScript : MonoBehaviour
     [Header("Camera Zoom Settings")]
     public float zoomSpeed = 2f;           
     public float margin = 2f;              
-    public float minOrthographicSize = 5f; 
+    public float minOrthographicSize = 7f; 
     public float maxOrthographicSize = 10f;
     
     private Camera cam;

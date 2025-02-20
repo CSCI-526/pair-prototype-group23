@@ -55,7 +55,7 @@ public class TileColorRandomizer : MonoBehaviour
             SpriteRenderer sr = tile.GetComponent<SpriteRenderer>();
             if (sr != null)
             {
-                sr.color = new Color32(0xAE, 0xEE, 0xEE, 0xFF);
+                sr.color = new Color32(255, 11, 210, 255); // #FF0BD2
             }
         }
 
